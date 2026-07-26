@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alfa Romeo, Mercedes, BMW чи Audi?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14161a;
+    --bg-panel: #1c1f24;
+    --line: #2c3036;
+    --text: #eef0f2;
+    --text-dim: #9aa0a8;
+
+    --alfa: #b8112c;
+    --merc: #b9c2c6;
+    --bmw: #1c69d4;
+    --audi: #c9112b;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  body{
+    background: #0c0d10;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  .orb{
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(90px);
+    pointer-events:none;
+    z-index:0;
+    opacity:0.55;
+  }
+  .orb-1{ width:420px; height:420px; top:-120px; left:-100px; background: var(--alfa); animation: float1 14s ease-in-out infinite; }
+  .orb-2{ width:460px; height:460px; bottom:-140px; right:-120px; background: var(--bmw); animation: float2 16s ease-in-out infinite; }
+
+  @keyframes float1{ 0%,100%{ transform: translate(0,0);} 50%{ transform: translate(40px,30px);} }
+  @keyframes float2{ 0%,100%{ transform: translate(0,0);} 50%{ transform: translate(-30px,-40px);} }
+
+  .glass-panel{
+    position:relative;
+    z-index:1;
+    background: linear-gradient(180deg, rgba(28,31,36,0.72), rgba(20,22,26,0.72));
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px;
+    padding: clamp(28px, 5vw, 48px);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+
+  .display{ font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:0.02em; }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+
+  .stage{ width:100%; max-width: 680px; position:relative; }
+
+  .screen{ display:none; }
+  .screen.active{ display:block; animation: fadeUp .5s ease; }
+
+  @keyframes fadeUp{ from{ opacity:0; transform: translateY(14px);} to{ opacity:1; transform: translateY(0);} }
+
+  .car-card{
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    padding: 10px 8px 12px;
+    text-align:center;
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .car-card:hover{ transform: translateY(-3px); border-color:#4a5158; box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+  .car-card .car-svg{ color: var(--brand-color, var(--text)); width:100%; height:auto; }
+  .car-card .car-name{ font-family:'Oswald', sans-serif; font-size: clamp(11px, 2.4vw, 13px); letter-spacing:0.03em; text-transform:uppercase; margin-top: 8px; }
+  .car-card .car-model{ font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  .eyebrow{ font-family:'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.18em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 14px; display:flex; align-items:center; gap:8px; }
+  .eyebrow .dot{ width:7px; height:7px; border-radius:50%; background:#3ddc73; box-shadow: 0 0 8px #3ddc73; animation: pulse 1.8s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.4; } }
+
+  h1.title{ font-size: clamp(34px, 7vw, 54px); line-height: 1.05; font-weight: 700; margin-bottom: 18px; letter-spacing:-0.01em; }
+  h1.title .a{color:var(--alfa); text-shadow: 0 0 24px rgba(184,17,44,0.35);} h1.title .m{color:var(--merc);} h1.title .b{color:var(--bmw); text-shadow: 0 0 24px rgba(28,105,212,0.35);} h1.title .d{color:var(--audi);}
+  .subtitle{ color: var(--text-dim); font-size: 16px; max-width: 480px; line-height: 1.55; margin-bottom: 30px; }
+
+  .badge-row{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 34px; }
+
+  .btn{ display:inline-flex; align-items:center; gap:10px; background: var(--text); color: var(--bg); border:none; font-family:'Oswald', sans-serif; font-weight:600; font-size:15px; letter-spacing:0.03em; text-transform:uppercase; padding: 15px 28px; border-radius: 6px; cursor:pointer; transition: transform .15s ease, box-shadow .15s ease; box-shadow: 0 8px 30px rgba(184,17,44,0.25); }
+  .btn:hover{ transform: translateY(-2px); box-shadow: 0 12px 34px rgba(184,17,44,0.4); }
+  .btn:active{ transform: translateY(0); }
+  .btn:focus-visible{ outline: 2px solid var(--bmw); outline-offset: 3px; }
+  .btn.ghost{ background: transparent; color: var(--text); border: 1px solid var(--line); box-shadow:none; }
+  .btn.ghost:hover{ box-shadow: 0 8px 24px rgba(0,0,0,0.35); border-color:#4a5158; }
+
+  .progress-wrap{ display:flex; align-items:center; gap: 14px; margin-bottom: 30px; }
+  .progress-label{ font-family:'JetBrains Mono', monospace; font-size: 13px; color: var(--text-dim); white-space:nowrap; }
+  .progress-track{ flex:1; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; background: linear-gradient(90deg, var(--alfa), var(--bmw)); box-shadow: 0 0 12px rgba(184,17,44,0.5); transition: width .4s ease; }
+
+  .q-title{ font-family:'Oswald', sans-serif; font-size: clamp(21px, 4.2vw, 28px); font-weight:600; line-height:1.25; margin-bottom: 26px; }
+
+  .options{ display:flex; flex-direction:column; gap: 10px; }
+  .option{ text-align:left; background: rgba(255,255,255,0.03); border: 1px solid var(--line); color: var(--text); padding: 16px 18px; border-radius: 8px; font-size: 15px; cursor:pointer; transition: border-color .15s ease, background .15s ease, transform .1s ease, box-shadow .15s ease; font-family:'IBM Plex Sans', sans-serif; }
+  .option:hover{ border-color: var(--bmw); background:rgba(28,105,212,0.08); box-shadow: 0 6px 20px rgba(28,105,212,0.15); }
+  .option:active{ transform: scale(0.995); }
+  .option:focus-visible{ outline: 2px solid var(--bmw); outline-offset: 2px; }
+
+  .result-eyebrow{ font-family:'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.18em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; text-align:center; }
+  .result-title{ font-family:'Oswald', sans-serif; font-size: clamp(28px, 6.2vw, 42px); font-weight:700; text-align:center; color: var(--alfa); margin-bottom: 6px; line-height:1.15; }
+  .result-sub{ text-align:center; color: var(--text-dim); max-width: 500px; margin: 0 auto 26px; line-height:1.55; font-size:15px; }
+
+  .winner-card{ max-width: 220px; margin: 0 auto 20px; }
+  .winner-card .car-svg{ color: var(--alfa); }
+
+  .verdict-line{ text-align:center; font-family:'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); letter-spacing: 0.05em; margin-bottom: 30px; text-transform: uppercase; }
+
+  .bars{ display:flex; flex-direction:column; gap: 12px; margin-bottom: 30px; }
+  .bar-row{ display:grid; grid-template-columns: 90px 1fr 42px; align-items:center; gap: 12px; }
+  .bar-name{ font-family:'Oswald', sans-serif; font-size: 13px; letter-spacing:0.03em; text-transform:uppercase; color: var(--text-dim); }
+  .bar-track{ height: 8px; background: var(--line); border-radius: 4px; overflow:hidden; }
+  .bar-fill{ height:100%; width:0%; border-radius:4px; transition: width 1s ease; }
+  .bar-fill.a{ background: var(--alfa); } .bar-fill.m{ background: var(--merc); } .bar-fill.b{ background: var(--bmw); } .bar-fill.d{ background: var(--audi); }
+  .bar-pct{ font-family:'JetBrains Mono', monospace; font-size: 13px; text-align:right; color: var(--text-dim); }
+
+  .result-actions{ display:flex; justify-content:center; }
+
+  footer{ margin-top: 30px; text-align:center; font-family:'JetBrains Mono', monospace; font-size: 11px; color: #565c64; letter-spacing: 0.05em; }
+
+  @media (prefers-reduced-motion: reduce){
+    .screen.active{ animation:none; }
+    .bar-fill, .progress-fill{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<svg width="0" height="0" style="position:absolute">
+
+  <!-- Alfa Romeo 147 — black hatchback, red triangular grille accent -->
+  <symbol id="car-alfa" viewBox="0 0 220 110">
+    <path d="M18,72 C18,56 34,50 50,48 L64,26 C70,18 82,14 96,14 L128,14 C140,14 150,18 156,26 L168,46 C182,48 196,54 196,70 L196,80 C196,84 193,87 189,87 L178,87 C176,78 168,72 158,72 C148,72 140,78 138,87 L82,87 C80,78 72,72 62,72 C52,72 44,78 42,87 L27,87 C21,87 18,84 18,80 Z"
+      fill="#1b1b1e" stroke="var(--alfa)" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M66,28 L78,46 L146,46 L156,28 C150,21 142,19 134,19 L88,19 C80,19 72,21 66,28 Z" fill="#aab4bb" opacity="0.9"/>
+    <path d="M186,64 L197,64 L191.5,80 Z" fill="var(--alfa)"/>
+    <ellipse cx="193" cy="55" rx="4.5" ry="4" fill="#ffe9a8"/>
+    <circle cx="62" cy="87" r="15" fill="#0c0c0d"/><circle cx="62" cy="87" r="6" fill="#6b7076"/>
+    <circle cx="158" cy="87" r="15" fill="#0c0c0d"/><circle cx="158" cy="87" r="6" fill="#6b7076"/>
+  </symbol>
+
+  <!-- Mercedes CLS 63 AMG — silver coupe-sedan, chrome slat grille -->
+  <symbol id="car-merc" viewBox="0 0 220 110">
+    <path d="M14,74 C14,58 30,52 46,50 L62,24 C70,15 84,11 100,11 L126,11 C138,11 148,15 154,22 L166,44 C186,46 206,50 208,66 L208,80 C208,84 205,87 201,87 L188,87 C186,78 178,72 168,72 C158,72 150,78 148,87 L78,87 C76,78 68,72 58,72 C48,72 40,78 38,87 L25,87 C19,87 14,84 14,80 Z"
+      fill="#c9d0d4" stroke="#3a4045" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M64,26 L76,44 L156,44 L164,26 C158,19 148,16 138,16 L86,16 C76,16 68,19 64,26 Z" fill="#565d63" opacity="0.9"/>
+    <rect x="190" y="61" width="16" height="3" rx="1.5" fill="#eef2f4"/>
+    <rect x="190" y="67" width="16" height="3" rx="1.5" fill="#eef2f4"/>
+    <rect x="190" y="73" width="16" height="3" rx="1.5" fill="#eef2f4"/>
+    <ellipse cx="204" cy="53" rx="4.5" ry="4" fill="#fff6d8"/>
+    <circle cx="58" cy="87" r="15" fill="#101214"/><circle cx="58" cy="87" r="6" fill="#8a9096"/>
+    <circle cx="168" cy="87" r="15" fill="#101214"/><circle cx="168" cy="87" r="6" fill="#8a9096"/>
+  </symbol>
+
+  <!-- BMW M5 F90 — blue sedan, twin dark grille ovals -->
+  <symbol id="car-bmw" viewBox="0 0 220 110">
+    <path d="M14,74 C14,58 30,52 46,50 L62,24 C70,15 84,11 100,11 L126,11 C138,11 148,15 154,22 L166,44 C186,46 206,50 208,66 L208,80 C208,84 205,87 201,87 L188,87 C186,78 178,72 168,72 C158,72 150,78 148,87 L78,87 C76,78 68,72 58,72 C48,72 40,78 38,87 L25,87 C19,87 14,84 14,80 Z"
+      fill="var(--bmw)" stroke="#0d2b52" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M64,26 L76,44 L156,44 L164,26 C158,19 148,16 138,16 L86,16 C76,16 68,19 64,26 Z" fill="#0f2846" opacity="0.85"/>
+    <ellipse cx="195" cy="70" rx="6" ry="9" fill="#0d1620"/>
+    <ellipse cx="205" cy="71" rx="5" ry="8" fill="#0d1620"/>
+    <ellipse cx="204" cy="53" rx="4.5" ry="4" fill="#eaf2ff"/>
+    <circle cx="58" cy="87" r="15" fill="#0a1526"/><circle cx="58" cy="87" r="6" fill="#7f9ac2"/>
+    <circle cx="168" cy="87" r="15" fill="#0a1526"/><circle cx="168" cy="87" r="6" fill="#7f9ac2"/>
+  </symbol>
+
+  <!-- Audi RS7 — silver sportback, dark honeycomb single-frame grille -->
+  <symbol id="car-audi" viewBox="0 0 220 110">
+    <path d="M14,74 C14,58 30,52 46,50 L62,24 C70,15 84,11 100,11 L126,11 C138,11 148,15 154,22 L166,44 C186,46 206,50 208,66 L208,80 C208,84 205,87 201,87 L188,87 C186,78 178,72 168,72 C158,72 150,78 148,87 L78,87 C76,78 68,72 58,72 C48,72 40,78 38,87 L25,87 C19,87 14,84 14,80 Z"
+      fill="#a7acb0" stroke="#3a3d40" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M64,26 L76,44 L156,44 L164,26 C158,19 148,16 138,16 L86,16 C76,16 68,19 64,26 Z" fill="#4e5457" opacity="0.9"/>
+    <path d="M190,60 L207,60 L204.5,82 L192.5,82 Z" fill="#161617" stroke="#6b7075" stroke-width="1.5"/>
+    <ellipse cx="204" cy="53" rx="4.5" ry="4" fill="#eaeaea"/>
+    <circle cx="58" cy="87" r="15" fill="#0d0d0e"/><circle cx="58" cy="87" r="6" fill="#7d8286"/>
+    <circle cx="168" cy="87" r="15" fill="#0d0d0e"/><circle cx="168" cy="87" r="6" fill="#7d8286"/>
+  </symbol>
+
+</svg>
+
+<div class="stage">
+  <div class="glass-panel">
+
+  <section class="screen active" id="screen-home">
+    <div class="eyebrow"><span class="dot"></span>Гараж-тест · 7 питань</div>
+    <h1 class="title"><span class="a">Alfa</span> · <span class="m">Mercedes</span> · <span class="b">BMW</span> · <span class="d">Audi</span></h1>
+    <p class="subtitle">Обери, хто краще в кожній дисципліні — повний привід, комфорт, керованість, потужність. Наприкінці дізнаєшся, хто насправді перемагає.</p>
+
+    <div class="badge-row">
+      <div class="car-card">
+        <svg class="car-svg" viewBox="0 0 220 110"><use href="#car-alfa"/></svg>
+        <div class="car-name">Alfa Romeo</div>
+        <div class="car-model">147 · 2007</div>
+      </div>
+      <div class="car-card">
+        <svg class="car-svg" viewBox="0 0 220 110"><use href="#car-merc"/></svg>
+        <div class="car-name">Mercedes</div>
+        <div class="car-model">CLS63 AMG · 2014</div>
+      </div>
+      <div class="car-card">
+        <svg class="car-svg" viewBox="0 0 220 110"><use href="#car-bmw"/></svg>
+        <div class="car-name">BMW</div>
+        <div class="car-model">M5 F90</div>
+      </div>
+      <div class="car-card">
+        <svg class="car-svg" viewBox="0 0 220 110"><use href="#car-audi"/></svg>
+        <div class="car-name">Audi</div>
+        <div class="car-model">RS7</div>
+      </div>
+    </div>
+
+    <button class="btn" onclick="startQuiz()">Почати тест →</button>
+  </section>
+
+  <section class="screen" id="screen-quiz">
+    <div class="progress-wrap">
+      <div class="progress-label mono"><span id="q-current">1</span> / <span id="q-total">7</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <h2 class="q-title" id="q-title"></h2>
+    <div class="options" id="q-options"></div>
+  </section>
+
+  <section class="screen" id="screen-result">
+    <div class="result-eyebrow">Об'єктивно ти обрав переможцем: <span id="logic-winner" class="mono"></span></div>
+    <h2 class="result-title">Та насправді перемагає — Alfa Romeo</h2>
+    <p class="result-sub">Розум порахував бали чесно. Але серце в гаражі рахує інакше: quattro, амг-мотори й німецька точність — це все чудово, але жоден з них не змусить тебе посміхатись у заторі так, як хрипкий Twin Spark під капотом.</p>
+
+    <div class="car-card winner-card">
+      <svg class="car-svg" viewBox="0 0 220 110"><use href="#car-alfa"/></svg>
+      <div class="car-name">Alfa Romeo</div>
+      <div class="car-model">147 · 2007</div>
+    </div>
+
+    <div class="verdict-line">ХА-ХА НАЙКРАЩА МАШИНА ЦЕ ALFA ROMEO 147, ХОРОША СПРОБА 😏</div>
+
+    <div class="bars" id="result-bars"></div>
+
+    <div class="result-actions">
+      <button class="btn ghost" onclick="restartQuiz()">Пройти ще раз</button>
+    </div>
+  </section>
+
+  </div>
+  <footer>ГАРАЖ-ТЕСТ · РЕЗУЛЬТАТ ЗАВЖДИ ОДИН</footer>
+</div>
+
+<script>
+  const QUESTIONS = [
+    { title: "У кого найкращий постійний повний привід?", options: [
+      { text: "Alfa Romeo", key: "a" }, { text: "Mercedes 4MATIC", key: "m" }, { text: "BMW xDrive", key: "b" }, { text: "Audi quattro", key: "d" }
+    ]},
+    { title: "У кого найкомфортніший хід на довгій трасі?", options: [
+      { text: "Alfa Romeo", key: "a" }, { text: "Mercedes CLS", key: "m" }, { text: "BMW", key: "b" }, { text: "Audi", key: "d" }
+    ]},
+    { title: "У кого найточніша кермова передача в поворотах?", options: [
+      { text: "Alfa Romeo", key: "a" }, { text: "Mercedes", key: "m" }, { text: "BMW M5", key: "b" }, { text: "Audi", key: "d" }
+    ]},
+    { title: "У кого найпотужніший серійний твін-турбо V8?", options: [
+      { text: "Alfa Romeo", key: "a" }, { text: "Mercedes-AMG 63", key: "m" }, { text: "BMW M5 Competition", key: "b" }, { text: "Audi RS7", key: "d" }
+    ]},
+    { title: "У кого найсучасніша цифрова панель приладів?", options: [
+      { text: "Alfa Romeo", key: "a" }, { text: "Mercedes MBUX", key: "m" }, { text: "BMW iDrive", key: "b" }, { text: "Audi virtual cockpit", key: "d" }
+    ]},
+    { title: "У кого найпрестижніший статус на парковці бізнес-центру?", options: [
+      { text: "Alfa Romeo", key: "a" }, { text: "Mercedes S-класу рівень", key: "m" }, { text: "BMW", key: "b" }, { text: "Audi", key: "d" }
+    ]},
+    { title: "У кого найкраще співвідношення ціни й обслуговування?", options: [
+      { text: "Alfa Romeo", key: "a" }, { text: "Mercedes", key: "m" }, { text: "BMW", key: "b" }, { text: "Audi", key: "d" }
+    ]}
+  ];
+
+  const NAMES = {a:'Alfa', m:'Mercedes', b:'BMW', d:'Audi'};
+
+  let current = 0;
+  const scores = {a:0, m:0, b:0, d:0};
+
+  document.getElementById('q-total').textContent = QUESTIONS.length;
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function startQuiz(){
+    current = 0;
+    scores.a = scores.m = scores.b = scores.d = 0;
+    showScreen('screen-quiz');
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    const q = QUESTIONS[current];
+    document.getElementById('q-current').textContent = current + 1;
+    document.getElementById('progress-fill').style.width = (current / QUESTIONS.length * 100) + '%';
+    document.getElementById('q-title').textContent = q.title;
+
+    const wrap = document.getElementById('q-options');
+    wrap.innerHTML = '';
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option';
+      btn.textContent = opt.text;
+      btn.addEventListener('click', () => selectOption(opt));
+      wrap.appendChild(btn);
+    });
+  }
+
+  function selectOption(opt){
+    scores[opt.key] += 1;
+    current++;
+    if(current < QUESTIONS.length){
+      renderQuestion();
+    } else {
+      document.getElementById('progress-fill').style.width = '100%';
+      setTimeout(showResult, 250);
+    }
+  }
+
+  function showResult(){
+    const order = ['a','m','b','d'];
+    const total = order.reduce((s,k) => s + scores[k], 0) || 1;
+
+    const logicWinner = order.reduce((best, k) => scores[k] > scores[best] ? k : best, 'a');
+    document.getElementById('logic-winner').textContent = NAMES[logicWinner];
+
+    const barsWrap = document.getElementById('result-bars');
+    barsWrap.innerHTML = '';
+    order.forEach(k => {
+      const pct = Math.round(scores[k] / total * 100);
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      row.innerHTML = `
+        <div class="bar-name">${NAMES[k]}</div>
+        <div class="bar-track"><div class="bar-fill ${k}" style="width:0%" data-pct="${pct}"></div></div>
+        <div class="bar-pct mono">${pct}%</div>
+      `;
+      barsWrap.appendChild(row);
+    });
+
+    showScreen('screen-result');
+
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.bar-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    });
+  }
+
+  function restartQuiz(){
+    showScreen('screen-home');
+  }
+</script>
+
+</body>
+</html>
